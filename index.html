@@ -3,131 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Questionário Elegante</title>
+    <title>FREE SKILLS - Questionário</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
-            min-height: 100vh;
-        }
-        
-        .fade-out {
-            animation: fadeOut 0.5s forwards;
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.5s forwards;
-        }
-        
-        @keyframes fadeOut {
-            from { 
-                opacity: 1; 
-                transform: translateY(0) scale(1); 
-            }
-            to { 
-                opacity: 0; 
-                transform: translateY(-20px) scale(0.95); 
-                display: none; 
-            }
-        }
-        
-        @keyframes fadeIn {
-            from { 
-                opacity: 0; 
-                transform: translateY(20px) scale(0.95); 
-            }
-            to { 
-                opacity: 1; 
-                transform: translateY(0) scale(1); 
-            }
-        }
-        
-        .question {
-            display: none;
-        }
-        
-        .question.active {
-            display: block;
-        }
-        
-        .progress-bar {
-            transition: width 0.5s ease;
-        }
-        
-        .btn-yes {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
-        }
-        
-        .btn-no {
-            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
-            box-shadow: 0 4px 6px rgba(239, 68, 68, 0.3);
-        }
-        
-        .btn-yes:hover, .btn-no:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-        }
-        
-        .card {
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            border-radius: 16px;
-            overflow: hidden;
-        }
-        
-        .header-gradient {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
-        }
-        
-        .footer-gradient {
-            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
-        }
-        
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body class="flex flex-col min-h-screen">
-    <!-- Header -->
-    <header class="header-gradient text-white py-5 px-4">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center">
-                <div class="bg-white p-2 rounded-full mr-3">
-                    <i class="fas fa-clipboard-list text-blue-600 text-xl"></i>
+    <!-- Topbar -->
+    <header class="topbar text-white py-3 px-4 sticky top-0 z-50">
+        <div class="container mx-auto flex items-center justify-between relative">
+            <a href="#" class="brand">
+                <span class="brand-logo">
+                    <img src="assets/arquivos/FREE.SKILLS.png" alt="FREE SKILLS" class="w-10 h-10 sm:w-12 sm:h-12 object-contain">
+                </span>
+                <span class="brand-text text-lg sm:text-xl">FREE SKILLS</span>
+            </a>
+            <nav class="hidden sm:flex items-center space-x-4">
+                <a href="#" class="text-white/80 hover:text-white transition"><i class="fab fa-facebook"></i></a>
+                <a href="#" class="text-white/80 hover:text-white transition"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-white/80 hover:text-white transition"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="text-white/80 hover:text-white transition"><i class="fab fa-linkedin"></i></a>
+            </nav>
+            <button id="mobileMenuToggle" aria-label="Menu" class="sm:hidden text-white/80 hover:text-white">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <!-- Mobile menu -->
+            <div id="mobileMenu" class="hidden sm:hidden absolute left-0 right-0 top-full mt-2 rounded-xl shadow-lg border border-gray-200 bg-white overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                    <span class="font-semibold text-gray-800">Menu</span>
+                    <button aria-label="Fechar" class="text-gray-500 hover:text-gray-700" id="closeMobileMenu">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
-                <h1 class="text-2xl font-bold">Questionário Decola</h1>
-            </div>
-            <div class="flex space-x-4">
-                <a href="#" class="text-white hover:text-blue-200 transition"><i class="fab fa-facebook"></i></a>
-                <a href="#" class="text-white hover:text-blue-200 transition"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="text-white hover:text-blue-200 transition"><i class="fab fa-twitter"></i></a>
+                <div class="px-4 py-3 space-y-3">
+                    <a href="#" class="block text-blue-800 hover:text-blue-950"><i class="fab fa-facebook mr-2"></i>Facebook</a>
+                    <a href="#" class="block text-blue-800 hover:text-blue-950"><i class="fab fa-instagram mr-2"></i>Instagram</a>
+                    <a href="#" class="block text-blue-800 hover:text-blue-950"><i class="fab fa-twitter mr-2"></i>Twitter</a>
+                    <a href="#" class="block text-blue-800 hover:text-blue-950"><i class="fab fa-linkedin mr-2"></i>LinkedIn</a>
+                </div>
             </div>
         </div>
     </header>
 
     <!-- Conteúdo Principal -->
-    <main class="flex-grow flex items-center justify-center py-10 px-4">
-        <div class="card bg-white w-full max-w-lg">
+    <main class="flex-grow flex items-center justify-center py-4 sm:py-8 lg:py-10 px-4">
+        <div class="card bg-white w-full max-w-xs sm:max-w-md lg:max-w-lg">
             <div class="bg-blue-600 text-white py-3 px-6 text-center">
-                <h2 class="text-xl font-semibold">Pesquisa de Satisfação</h2>
-                <p class="text-blue-100 text-sm">Responda nossas 12 perguntas</p>
+                <h2 class="text-xl font-semibold" id="cardTitle">Dados Pessoais</h2>
+                <p class="text-blue-100 text-sm" id="cardSubtitle">Preencha suas informações</p>
             </div>
             
             <div class="p-6">
@@ -155,157 +78,11 @@
                 <a href="#" class="text-white hover:text-red-200 transition"><i class="fab fa-twitter text-lg"></i></a>
                 <a href="#" class="text-white hover:text-red-200 transition"><i class="fab fa-linkedin text-lg"></i></a>
             </div>
-            <p class="text-sm">© 2023 Decola School - Todos os direitos reservados</p>
-            <p class="text-xs mt-2 text-red-100">Desenvolvido com ❤️ para a comunidade</p>
+            <p class="text-sm">© <span id="currentYear"></span> FREE SKILLS - Todos os direitos reservados</p>
+            <p class="text-xs mt-2 text-red-100">Desenvolvido por <a href="https://guilhermeviana.com/" target="_blank" rel="noopener noreferrer" class="underline hover:opacity-80">Guilherme Viana</a></p>
         </div>
     </footer>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Lista de perguntas
-            const questions = [
-                "Você está satisfeito com nosso serviço?",
-                "O produto atendeu às suas expectativas?",
-                "Você recomendaria nossa empresa a um amigo?",
-                "O suporte foi útil e responsivo?",
-                "Você encontrou todas as informações que precisava?",
-                "O processo de compra foi fácil e intuitivo?",
-                "Você teve algum problema técnico?",
-                "O preço é justo para o valor recebido?",
-                "Você voltaria a fazer negócios conosco?",
-                "O design é atraente e funcional?",
-                "As funcionalidades atendem às suas necessidades?",
-                "Você tem alguma sugestão de melhoria?"
-            ];
-            
-            const form = document.getElementById('questionForm');
-            const progressBar = document.querySelector('.progress-bar');
-            const progressText = document.getElementById('progress');
-            let currentQuestion = 0;
-            let answers = [];
-            
-            // Inicializar o formulário com a primeira pergunta
-            initializeForm();
-            
-            function initializeForm() {
-                // Criar elementos para todas as perguntas
-                questions.forEach((question, index) => {
-                    const questionDiv = document.createElement('div');
-                    questionDiv.className = `question ${index === 0 ? 'active' : ''}`;
-                    questionDiv.id = `question-${index}`;
-                    
-                    questionDiv.innerHTML = `
-                        <div class="text-center mb-6">
-                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <span class="text-2xl font-bold text-blue-600">${index + 1}</span>
-                            </div>
-                            <h2 class="text-xl font-semibold text-gray-800 mb-2">Pergunta ${index + 1}/12</h2>
-                            <p class="text-gray-600">${question}</p>
-                        </div>
-                        <div class="flex justify-center space-x-6">
-                            <button type="button" data-value="sim" class="btn-yes text-white font-bold py-3 px-8 rounded-full transition-all duration-300 flex items-center">
-                                <i class="fas fa-check-circle mr-2"></i> Sim
-                            </button>
-                            <button type="button" data-value="nao" class="btn-no text-white font-bold py-3 px-8 rounded-full transition-all duration-300 flex items-center">
-                                <i class="fas fa-times-circle mr-2"></i> Não
-                            </button>
-                        </div>
-                    `;
-                    
-                    form.appendChild(questionDiv);
-                });
-                
-                // Adicionar event listeners aos botões
-                document.querySelectorAll('.question button').forEach(button => {
-                    button.addEventListener('click', handleAnswer);
-                });
-                
-                updateProgress();
-            }
-            
-            function handleAnswer(e) {
-                const answer = e.target.getAttribute('data-value');
-                answers[currentQuestion] = answer;
-                
-                // Efeito de fade out na pergunta atual
-                const currentQuestionElement = document.getElementById(`question-${currentQuestion}`);
-                currentQuestionElement.classList.add('fade-out');
-                
-                setTimeout(() => {
-                    currentQuestionElement.classList.remove('active');
-                    
-                    // Avançar para a próxima pergunta ou finalizar
-                    currentQuestion++;
-                    
-                    if (currentQuestion < questions.length) {
-                        const nextQuestionElement = document.getElementById(`question-${currentQuestion}`);
-                        nextQuestionElement.classList.add('active');
-                        
-                        // Efeito de fade in na próxima pergunta
-                        setTimeout(() => {
-                            nextQuestionElement.classList.add('fade-in');
-                        }, 50);
-                        
-                        updateProgress();
-                    } else {
-                        // Todas as perguntas respondidasasdasd
-                        showResults();
-                    }
-                }, 500);
-            }
-            
-            function updateProgress() {
-                const progressPercentage = (currentQuestion / questions.length) * 100;
-                progressBar.style.width = `${progressPercentage}%`;
-                progressText.textContent = `${Math.round(progressPercentage)}%`;
-            }
-            
-            function showResults() {
-                const yesCount = answers.filter(a => a === 'sim').length;
-                const noCount = answers.filter(a => a === 'nao').length;
-                
-                form.innerHTML = `
-                    <div class="fade-in text-center py-5">
-                        <div class="w-20 h-20 bg-gradient-to-r from-blue-600 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6 pulse">
-                            <i class="fas fa-check text-white text-3xl"></i>
-                        </div>
-                        <h2 class="text-2xl font-bold text-gray-800 mb-2">Questionário Completo!</h2>
-                        <p class="text-gray-600 mb-6">Obrigado por responder todas as perguntas.</p>
-                        
-                        <div class="bg-blue-50 p-4 rounded-xl mb-6">
-                            <h3 class="font-semibold text-blue-800 mb-3">Resumo das Respostas</h3>
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-blue-600 font-medium"><i class="fas fa-check-circle mr-2"></i>Respostas Sim</span>
-                                <span class="text-blue-800 font-bold">${yesCount}</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-red-600 font-medium"><i class="fas fa-times-circle mr-2"></i>Respostas Não</span>
-                                <span class="text-red-800 font-bold">${noCount}</span>
-                            </div>
-                        </div>
-                        
-                        <button id="restartButton" class="bg-gradient-to-r from-blue-600 to-red-600 text-white font-bold py-3 px-6 rounded-full transition-all duration-300 hover:from-blue-700 hover:to-red-700">
-                            <i class="fas fa-redo mr-2"></i> Responder Novamente
-                        </button>
-                    </div>
-                `;
-                
-                document.getElementById('restartButton').addEventListener('click', function() {
-                    currentQuestion = 0;
-                    answers = [];
-                    
-                    // Reconstruir o formulário
-                    form.innerHTML = '';
-                    initializeForm();
-                    
-                    // Recriar a primeira pergunta com efeito de fade-in
-                    const firstQuestion = document.getElementById('question-0');
-                    firstQuestion.classList.add('active', 'fade-in');
-                    
-                    updateProgress();
-                });
-            }
-        });
-    </script>
+    <script src="assets/js/main.js"></script>
 </body>
 </html>
