@@ -57,21 +57,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Configurações do questionário
     const config = {
         questions: [
-            "Você está satisfeito com nosso serviço?",
-            "O produto atendeu às suas expectativas?",
-            "Você recomendaria nossa empresa a um amigo?",
-            "O suporte foi útil e responsivo?",
-            "Você encontrou todas as informações que precisava?",
-            "O processo de compra foi fácil e intuitivo?",
-            "Você teve algum problema técnico?",
-            "O preço é justo para o valor recebido?",
-            "Você voltaria a fazer negócios conosco?",
-            "O design é atraente e funcional?",
-            "As funcionalidades atendem às suas necessidades?",
-            "Você tem alguma sugestão de melhoria?"
+            "👉 Você sente satisfação com a sua rotina e consegue encontrar motivos para agradecer no seu dia a dia?",
+            "👉 Você se sente à vontade para expressar suas ideias claramente em conversas ou apresentações em público?",
+            "👉 Quando enfrenta mudanças ou imprevistos, você consegue se adaptar sem perder o foco principal?",
+            "👉 Você costuma assumir iniciativas em grupo e contribuir para que todos trabalhem em harmonia?",
+            "👉 Você busca soluções novas e diferentes para problemas do cotidiano, em vez de sempre repetir o mesmo padrão?",
+            "👉 Você age antes de ser solicitado, antecipando demandas e necessidades em sua vida ou trabalho?",
+            "👉 Você costuma se colocar no lugar das outras pessoas para entender o que elas sentem ou pensam?",
+            "👉 Você mantém seus valores e princípios mesmo quando ninguém está observando?",
+            "👉 Você questiona informações e procura diferentes pontos de vista antes de aceitar algo como verdade?",
+            "👉 Você organiza suas finanças pessoais e consegue planejar gastos e investimentos com clareza?",
+            "👉 Você consegue controlar suas emoções em momentos de pressão, evitando reações impulsivas?",
+            "👉 Você costuma identificar oportunidades e transformar ideias em ações práticas e concretas?"
         ],
         apis: {
-            deskills: 'https://api.deskills.com.br/',
             ibgeStates: 'https://servicodados.ibge.gov.br/api/v1/localidades/estados',
             ibgeCities: 'https://servicodados.ibge.gov.br/api/v1/localidades/estados/{uf}/municipios'
         }
@@ -165,8 +164,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const email = document.getElementById('userEmail').value.trim();
             const whatsapp = document.getElementById('userWhatsapp').value.trim();
             const city = document.getElementById('userCity').value.trim();
+            const stateSelect = document.getElementById('userState');
+            const selectedStateOption = stateSelect.options[stateSelect.selectedIndex];
+            const estado = selectedStateOption ? selectedStateOption.text.replace(/ \([A-Z]{2}\)/, '') : '';
             
-            if (!name || !email || !whatsapp || !city) {
+            if (!name || !email || !whatsapp || !city || !estado) {
                 showAlert('Por favor, preencha todos os campos!', 'error');
                 return;
             }
@@ -178,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            state.personalData = { name, email, whatsapp, city };
+            state.personalData = { name, email, whatsapp, city, estado };
             state.currentStep = 'questions';
             state.currentStepNumber = 4;
             
@@ -193,6 +195,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Carregar estados do IBGE
         loadStates();
+        
+        // Adicionar lógica para gerenciar outline do input de cidades
+        setupCityOutlineControl();
     }
     
     function showQuestions() {
@@ -478,35 +483,54 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Função para envio usando o módulo api_post.js
     async function sendDataToAPI() {
-        const formattedData = formatSurveyData();
-        
         try {
-            showAlert('Enviando dados...', 'info');
+            // Usa o módulo api_post.js para enviar dados
+            const result = await window.sendSurveyData(state.personalData, state.answers, config.questions);
             
-            const response = await fetch(config.apis.deskills, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(formattedData)
-            });
-
-            if (response.ok) {
-                const responseData = await response.json();
-                showAlert('Dados enviados com sucesso!', 'success');
-                console.log('DeSkills API Response:', responseData);
+            if (result.success) {
+                console.log('✅ Dados enviados com sucesso:', result.data);
+                // Adiciona mensagem de sucesso visível na tela
+                setTimeout(() => {
+                    showSuccessMessage('🎉 Seus dados foram enviados com sucesso para nossa API!');
+                }, 1000);
             } else {
-                throw new Error(`HTTP Error: ${response.status}`);
+                console.error('❌ Erro no envio:', result.error);
+                showAlert('❌ Erro ao enviar dados para a API', 'error');
             }
         } catch (error) {
-            console.error('Erro ao enviar dados para DeSkills:', error);
-            showAlert('Erro ao enviar dados. Dados salvos localmente.', 'error');
-            
-            // Fallback: salvar no localStorage
-            localStorage.setItem('surveyData', JSON.stringify(formattedData));
+            console.error('❌ Erro crítico no envio:', error);
+            showAlert('❌ Erro crítico no envio dos dados', 'error');
         }
+    }
+
+    // Função para exibir mensagem de sucesso destacada
+    function showSuccessMessage(message) {
+        // Remove mensagens anteriores
+        const existingSuccess = document.querySelectorAll('.success-message');
+        existingSuccess.forEach(msg => msg.remove());
+
+        const successDiv = document.createElement('div');
+        successDiv.className = 'success-message fixed top-20 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-50 max-w-md text-center font-bold animate-bounce';
+        successDiv.innerHTML = `
+            <div class="flex items-center justify-center">
+                <i class="fas fa-check-circle text-2xl mr-3"></i>
+                <span>${message}</span>
+                <button class="ml-3 text-white hover:text-green-200" onclick="this.parentElement.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(successDiv);
+        
+        // Remove automaticamente após 8 segundos
+        setTimeout(() => {
+            if (successDiv.parentElement) {
+                successDiv.remove();
+            }
+        }, 8000);
     }
 
     function resetSurvey() {
@@ -525,6 +549,56 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show personal form again
         showPersonalDataForm();
     }
+    
+    // Função para gerenciar o outline do input de cidades
+    function setupCityOutlineControl() {
+        const stateSelect = document.getElementById('userState');
+        const citySelect = document.getElementById('userCity');
+        
+        if (!stateSelect || !citySelect) return;
+        
+        // Função para atualizar o outline da cidade
+        function updateCityOutline() {
+            const stateSelected = stateSelect.value.trim() !== '';
+            const citySelected = citySelect.value.trim() !== '';
+            
+            // Remove estilos anteriores
+            citySelect.style.border = '';
+            citySelect.style.boxShadow = '';
+            
+            if (!stateSelected) {
+                // Estado não selecionado = outline vermelho
+                citySelect.style.border = '2px solid #ef4444';
+                citySelect.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.2)';
+                console.log('🔴 Outline vermelho aplicado - Estado não selecionado');
+            } else if (stateSelected && citySelected) {
+                // Estado selecionado E cidade selecionada = outline verde
+                citySelect.style.border = '2px solid #10b981';
+                citySelect.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.2)';
+                console.log('🟢 Outline verde aplicado - Estado e cidade selecionados');
+            } else {
+                // Estado selecionado mas cidade não = padrão
+                citySelect.style.border = '1px solid #d1d5db';
+                citySelect.style.boxShadow = '';
+                console.log('⚪ Outline padrão - Estado selecionado, cidade não');
+            }
+        }
+        
+        // Listener para mudanças no estado
+        stateSelect.addEventListener('change', function() {
+            console.log('📍 Estado mudou para:', this.value);
+            setTimeout(updateCityOutline, 100); // Pequeno delay para garantir que o DOM foi atualizado
+        });
+        
+        // Listener para mudanças na cidade
+        citySelect.addEventListener('change', function() {
+            console.log('🏙️ Cidade mudou para:', this.value);
+            updateCityOutline();
+        });
+        
+        // Atualizar outline inicial
+        updateCityOutline();
+        console.log('🎯 Sistema de outline da cidade inicializado');
+    }
 });
-
 

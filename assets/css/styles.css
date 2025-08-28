@@ -221,6 +221,27 @@ input:focus {
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
 }
 
+/* Outline para input de cidades */
+.city-outline-red {
+    border: 2px solid #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+}
+
+.city-outline-green {
+    border: 2px solid #10b981 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
+}
+
+.city-outline-red:focus {
+    border: 2px solid #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3) !important;
+}
+
+.city-outline-green:focus {
+    border: 2px solid #10b981 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3) !important;
+}
+
 /* Efeito de hover nos botões */
 button {
     transition: all 0.3s ease;
