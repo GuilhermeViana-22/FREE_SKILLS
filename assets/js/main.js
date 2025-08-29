@@ -555,7 +555,7 @@ document.addEventListener('DOMContentLoaded', function() {
         state.isTransitioning = false;
         
         // Reset titles
-        elements.cardTitle.textContent = 'Teste as duas Soft Skills gratuitamente';
+        elements.cardTitle.textContent = 'Teste as suas Soft Skills gratuitamente';
         elements.cardSubtitle.textContent = 'Preencha suas informações';
         
         // Show personal form again
