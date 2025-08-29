@@ -185,8 +185,8 @@ document.addEventListener('DOMContentLoaded', function() {
             state.currentStepNumber = 4;
             
             // Atualizar títulos
-            elements.cardTitle.textContent = 'Pesquisa de Satisfação';
-            elements.cardSubtitle.textContent = `Olá ${name.split(' ')[0]}, responda nossas ${config.questions.length} perguntas`;
+            elements.cardTitle.textContent = 'Pesquisa Comportamental';
+            elements.cardSubtitle.textContent = `Olá ${name.split(' ')[0]}, em 2 minutos vamos analisar as suas Soft Skills`;
             
             showQuestions();
         });
@@ -308,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <i class="fas fa-check text-white text-3xl"></i>
                 </div>
                 <h2 class="text-2xl font-bold text-gray-800 mb-2">Parabéns, ${state.personalData.name.split(' ')[0]}!</h2>
-                <p class="text-gray-600 mb-6">Questionário finalizado com sucesso.</p>
+                <p class="text-gray-600 mb-6">Enviamos para você um diagnóstico completo de suas Soft Skills</p>
 
 
                 <div class="bg-green-50 p-4 rounded-xl mb-6">
@@ -543,7 +543,7 @@ document.addEventListener('DOMContentLoaded', function() {
         state.isTransitioning = false;
         
         // Reset titles
-        elements.cardTitle.textContent = 'Dados Pessoais';
+        elements.cardTitle.textContent = 'Teste as duas Soft Skills gratuitamente';
         elements.cardSubtitle.textContent = 'Preencha suas informações';
         
         // Show personal form again

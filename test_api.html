@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste API Leads - DeSkills</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .log-entry {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 8px;
+            margin: 2px 0;
+            border-radius: 4px;
+        }
+        .log-info { background-color: #e3f2fd; border-left: 4px solid #2196f3; }
+        .log-success { background-color: #e8f5e8; border-left: 4px solid #4caf50; }
+        .log-error { background-color: #ffebee; border-left: 4px solid #f44336; }
+        .log-warning { background-color: #fff3e0; border-left: 4px solid #ff9800; }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">🧪 Teste da API de Leads - DeSkills</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <!-- Teste Desenvolvimento -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-semibold text-blue-600 mb-4">🔧 Ambiente de Desenvolvimento</h2>
+                <p class="text-sm text-gray-600 mb-4">http://127.0.0.1:8000/api/lead</p>
+                <button id="testDev" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                    Testar Desenvolvimento
+                </button>
+                <div id="devResult" class="mt-4 text-sm"></div>
+            </div>
+
+            <!-- Teste Produção -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-semibold text-green-600 mb-4">🚀 Ambiente de Produção</h2>
+                <p class="text-sm text-gray-600 mb-4">https://api.deskills.com.br/api/lead</p>
+                <button id="testProd" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                    Testar Produção
+                </button>
+                <div id="prodResult" class="mt-4 text-sm"></div>
+            </div>
+        </div>
+
+        <!-- Log de Requisições -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">📋 Log de Requisições</h2>
+            <button id="clearLog" class="mb-4 bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded text-sm">
+                Limpar Log
+            </button>
+            <div id="logContainer" class="max-h-96 overflow-y-auto border border-gray-300 rounded p-4">
+                <div class="log-entry log-info">
+                    💡 Clique nos botões acima para testar os endpoints da API
+                </div>
+            </div>
+        </div>
+
+        <!-- Dados de Teste -->
+        <div class="mt-8 bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">📊 Dados de Teste Utilizados</h2>
+            <pre id="testData" class="bg-gray-100 p-4 rounded text-sm overflow-x-auto"></pre>
+        </div>
+    </div>
+
+    <script>
+        // Dados de teste
+        const testData = {
+            "nome_completo": "João Silva Teste",
+            "email": "joao.teste@email.com",
+            "whatsapp": "11999887766",
+            "estado": "SP",
+            "cidade": "São Paulo",
+            "respostas": {
+                "nome": "João Silva Teste",
+                "email": "joao.teste@email.com",
+                "perguntas": {
+                    "pergunta_1": "sim",
+                    "pergunta_2": "nao",
+                    "pergunta_3": "sim",
+                    "pergunta_4": "sim",
+                    "pergunta_5": "nao",
+                    "pergunta_6": "sim",
+                    "pergunta_7": "sim",
+                    "pergunta_8": "nao",
+                    "pergunta_9": "sim",
+                    "pergunta_10": "sim",
+                    "pergunta_11": "nao",
+                    "pergunta_12": "sim"
+                }
+            }
+        };
+
+        // Exibe os dados de teste
+        document.getElementById('testData').textContent = JSON.stringify(testData, null, 2);
+
+        // Função para adicionar log
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Função para testar endpoint
+        async function testEndpoint(url, environment) {
+            const resultDiv = document.getElementById(`${environment}Result`);
+            resultDiv.innerHTML = '<div class="text-blue-600">🔄 Testando...</div>';
+            
+            addLog(`🚀 Iniciando teste do endpoint: ${url}`, 'info');
+            
+            try {
+                const startTime = Date.now();
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'User-Agent': 'FreeSkills-Test/1.0',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+
+                let responseText = '';
+                let responseData = null;
+
+                try {
+                    responseText = await response.text();
+                    responseData = JSON.parse(responseText);
+                } catch (parseError) {
+                    responseData = responseText;
+                }
+
+                if (response.ok) {
+                    // Sucesso (200-299)
+                    resultDiv.innerHTML = `
+                        <div class="text-green-600 font-bold">✅ Status: ${response.status}</div>
+                        <div class="text-sm text-gray-600">Tempo: ${responseTime}ms</div>
+                        <div class="text-xs text-gray-500 mt-2 max-h-32 overflow-y-auto">
+                            ${JSON.stringify(responseData, null, 2)}
+                        </div>
+                    `;
+                    addLog(`✅ Sucesso! Status ${response.status} - Tempo: ${responseTime}ms`, 'success');
+                    
+                    if (responseData) {
+                        addLog(`📄 Resposta: ${typeof responseData === 'object' ? JSON.stringify(responseData) : responseData}`, 'info');
+                    }
+                } else {
+                    // Erro HTTP (400-599)
+                    resultDiv.innerHTML = `
+                        <div class="text-red-600 font-bold">❌ Status: ${response.status}</div>
+                        <div class="text-sm text-gray-600">Tempo: ${responseTime}ms</div>
+                        <div class="text-xs text-gray-500 mt-2 max-h-32 overflow-y-auto">
+                            ${responseText}
+                        </div>
+                    `;
+                    addLog(`❌ Erro HTTP ${response.status} - ${response.statusText}`, 'error');
+                    addLog(`📄 Resposta de erro: ${responseText}`, 'warning');
+                }
+
+            } catch (error) {
+                // Erro de rede ou conexão
+                resultDiv.innerHTML = `
+                    <div class="text-red-600 font-bold">🔥 Erro de Conexão</div>
+                    <div class="text-sm text-gray-600">${error.message}</div>
+                `;
+                addLog(`🔥 Erro de conexão: ${error.message}`, 'error');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('testDev').addEventListener('click', () => {
+            testEndpoint('http://127.0.0.1:8000/api/lead', 'dev');
+        });
+
+        document.getElementById('testProd').addEventListener('click', () => {
+            testEndpoint('https://api.deskills.com.br/api/lead', 'prod');
+        });
+
+        document.getElementById('clearLog').addEventListener('click', () => {
+            document.getElementById('logContainer').innerHTML = `
+                <div class="log-entry log-info">
+                    💡 Log limpo. Clique nos botões de teste para ver os resultados.
+                </div>
+            `;
+        });
+
+        addLog('🎯 Página de teste carregada e pronta para uso!', 'success');
+    </script>
+</body>
+</html>

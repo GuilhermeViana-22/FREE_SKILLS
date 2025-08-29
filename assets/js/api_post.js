@@ -12,11 +12,14 @@ class ApiPost {
     constructor() {
         // Environment-based endpoint selection
         this.isDevelopment = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-        this.productionEndpoint = 'https://api.deskilss/api';
+        this.productionEndpoint = 'https://api.deskills.com.br/api/lead';
         this.developmentEndpoint = 'http://127.0.0.1:8000/api/lead';
         this.apiEndpoint = this.isDevelopment ? this.developmentEndpoint : this.productionEndpoint;
         this.retryAttempts = 3;
         this.retryDelay = 1000; // 1 segundo
+        this.isSubmitting = false; // Flag para evitar duplo envio
+        this.lastSubmissionTime = 0; // Timestamp da última submissão
+        this.minSubmissionInterval = 5000; // 5 segundos entre submissões
     }
 
     /**
@@ -62,9 +65,9 @@ class ApiPost {
      * @returns {number} Tempo em segundos
      */
     calculateCompletionTime() {
-        // Estima baseado no tempo médio de 30s por pergunta + dados pessoais
+        // Estima baseado no tempo médio de 30s por pergunta + informações iniciais
         const estimatedTimePerQuestion = 30; // segundos
-        const personalDataTime = 120; // 2 minutos para dados pessoais
+        const personalDataTime = 120; // 2 minutos para informações iniciais
         return personalDataTime + (12 * estimatedTimePerQuestion); // Total em segundos
     }
 
@@ -247,26 +250,11 @@ class ApiPost {
     handleSendError(error, payload) {
         console.error('❌ Erro final ao enviar dados para DeSkills:', error);
         
-        // Salva backup local
+        // Salva backup local silenciosamente
         this.saveToLocalStorage(payload);
         
-        // Determina tipo de erro e mensagem apropriada
-        let errorMessage = '❌ Erro ao enviar dados. ';
-        
-        if (error.name === 'TypeError' || error.message.includes('fetch')) {
-            errorMessage += 'Verifique sua conexão com a internet.';
-        } else if (error.message.includes('400')) {
-            errorMessage += 'Dados inválidos enviados.';
-        } else if (error.message.includes('401') || error.message.includes('403')) {
-            errorMessage += 'Erro de autorização na API.';
-        } else if (error.message.includes('500')) {
-            errorMessage += 'Erro interno do servidor DeSkills.';
-        } else {
-            errorMessage += 'Erro desconhecido.';
-        }
-        
-        errorMessage += ' Dados salvos localmente.';
-        this.showAlert(errorMessage, 'error');
+        // Não mostra alertas de erro - apenas salva localmente
+        // O usuário verá apenas mensagens de sucesso quando funcionar
     }
 
     /**
@@ -382,10 +370,36 @@ class ApiPost {
      */
     async submitSurvey(personalData, answers, questions) {
         try {
+            // Verifica se já está enviando
+            if (this.isSubmitting) {
+                console.warn('⚠️ Envio já em andamento, aguarde...');
+                return {
+                    success: false,
+                    error: 'Envio em andamento',
+                    message: 'Aguarde, o envio já está sendo processado...'
+                };
+            }
+            
+            // Verifica intervalo mínimo entre submissões
+            const now = Date.now();
+            if (now - this.lastSubmissionTime < this.minSubmissionInterval) {
+                const remainingTime = Math.ceil((this.minSubmissionInterval - (now - this.lastSubmissionTime)) / 1000);
+                console.warn(`⚠️ Aguarde ${remainingTime}s antes de enviar novamente`);
+                return {
+                    success: false,
+                    error: 'Envio muito frequente',
+                    message: `Aguarde ${remainingTime} segundos antes de enviar novamente`
+                };
+            }
+            
             // Verifica se todos os dados necessários estão presentes
             if (!personalData || !answers || !questions) {
                 throw new Error('Dados incompletos para envio');
             }
+            
+            // Marca como enviando
+            this.isSubmitting = true;
+            this.lastSubmissionTime = now;
 
             // Envia dados
             const result = await this.send(personalData, answers, questions);
@@ -404,6 +418,9 @@ class ApiPost {
                 error: error.message,
                 message: 'Erro ao enviar questionário. Dados salvos localmente.'
             };
+        } finally {
+            // Sempre libera a flag de envio
+            this.isSubmitting = false;
         }
     }
 }
