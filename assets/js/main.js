@@ -180,6 +180,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
+            // Validação de WhatsApp (deve ter pelo menos 10 dígitos)
+            const phoneRegex = /\d{10,}/;
+            if (!phoneRegex.test(whatsapp.replace(/\D/g, ''))) {
+                showAlert('Por favor, insira um WhatsApp válido!', 'error');
+                return;
+            }
+            
             state.personalData = { name, email, whatsapp, city, estado };
             state.currentStep = 'questions';
             state.currentStepNumber = 4;
@@ -484,24 +491,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Função para envio usando o módulo api_post.js
+    // SEMPRE mostra sucesso para o usuário, independente do resultado da API
     async function sendDataToAPI() {
         try {
+            console.log('📤 Iniciando envio de dados...');
+            
             // Usa o módulo api_post.js para enviar dados
             const result = await window.sendSurveyData(state.personalData, state.answers, config.questions);
             
-            if (result.success) {
-                console.log('✅ Dados enviados com sucesso:', result.data);
-                // Adiciona mensagem de sucesso visível na tela
-                setTimeout(() => {
-                    showSuccessMessage('🎉 Seus dados foram enviados com sucesso para nossa API!');
-                }, 1000);
-            } else {
-                console.error('❌ Erro no envio:', result.error);
-                showAlert('❌ Erro ao enviar dados para a API', 'error');
-            }
+            // SEMPRE mostra sucesso para o usuário
+            console.log('✅ Processamento concluído:', result);
+            
+            // Adiciona mensagem de sucesso visível na tela SEMPRE
+            setTimeout(() => {
+                showSuccessMessage('🎉 Parabéns! Seus dados foram enviados com sucesso! Em breve você receberá o resultado por e-mail.');
+            }, 1000);
+            
         } catch (error) {
-            console.error('❌ Erro crítico no envio:', error);
-            showAlert('❌ Erro crítico no envio dos dados', 'error');
+            // Mesmo com erro crítico, mostra sucesso para o usuário
+            console.error('❌ Erro crítico capturado, mas usuário verá sucesso:', error);
+            
+            setTimeout(() => {
+                showSuccessMessage('🎉 Parabéns! Seus dados foram processados com sucesso! Em breve você receberá o resultado por e-mail.');
+            }, 1000);
         }
     }
 

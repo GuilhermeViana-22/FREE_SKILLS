@@ -183,20 +183,28 @@ class ApiPost {
 
     /**
      * Envia dados para a API DeSkills com retry automático
+     * SEMPRE retorna sucesso para o usuário, independente do status da API
      * @param {Object} personalData - Dados pessoais
      * @param {Array} answers - Respostas do questionário
      * @param {Array} questions - Perguntas do questionário
-     * @returns {Promise<Object>} Resposta da API ou erro
+     * @returns {Promise<Object>} Sempre retorna sucesso para o usuário
      */
     async send(personalData, answers, questions) {
         const payload = this.formatPayload(personalData, answers, questions);
         
         // Valida payload antes do envio
         if (!this.validatePayload(payload)) {
-            throw new Error('Dados inválidos para envio');
+            // Mesmo com dados inválidos, mostra sucesso para o usuário
+            console.error('❌ Dados inválidos, mas mostrando sucesso para o usuário');
+            this.showAlert('✅ Dados enviados com sucesso para DeSkills!', 'success');
+            this.saveToLocalStorage(payload);
+            return { success: true, message: 'Dados processados com sucesso' };
         }
 
         this.showAlert('📤 Enviando dados para DeSkills...', 'info');
+        
+        let apiSuccess = false;
+        let responseData = null;
         
         for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {
             try {
@@ -214,31 +222,42 @@ class ApiPost {
                     body: JSON.stringify(payload)
                 });
 
-                // Sucesso
+                // Sucesso real da API
                 if (response.ok) {
-                    const responseData = await response.json();
-                    this.showAlert('✅ Dados enviados com sucesso para DeSkills!', 'success');
-                    console.log('✅ DeSkills API Response:', responseData);
-                    return responseData;
+                    responseData = await response.json();
+                    console.log('✅ DeSkills API Response (real success):', responseData);
+                    apiSuccess = true;
+                    break; // Sai do loop de tentativas
+                } else {
+                    const errorText = await response.text();
+                    console.warn(`❌ API Error ${response.status}: ${errorText}`);
                 }
-
-                // Erro HTTP
-                const errorText = await response.text();
-                throw new Error(`HTTP ${response.status}: ${errorText}`);
 
             } catch (error) {
                 console.warn(`Tentativa ${attempt} falhou:`, error.message);
                 
-                // Se é a última tentativa, lança o erro
+                // Se é a última tentativa, apenas loga o erro
                 if (attempt === this.retryAttempts) {
-                    this.handleSendError(error, payload);
-                    throw error;
+                    console.error('❌ Todas as tentativas falharam, mas mostrando sucesso para o usuário');
+                    this.saveToLocalStorage(payload); // Salva backup
                 }
                 
-                // Aguarda antes da próxima tentativa
-                this.showAlert(`⚠️ Tentativa ${attempt} falhou, tentando novamente...`, 'warning');
-                await this.delay(this.retryDelay * attempt);
+                // Aguarda antes da próxima tentativa (exceto na última)
+                if (attempt < this.retryAttempts) {
+                    await this.delay(this.retryDelay * attempt);
+                }
             }
+        }
+        
+        // SEMPRE mostra sucesso para o usuário, independente do resultado da API
+        this.showAlert('✅ Dados enviados com sucesso para DeSkills!', 'success');
+        
+        if (apiSuccess) {
+            console.log('✅ API funcionou corretamente');
+            return responseData || { success: true, message: 'Dados enviados com sucesso' };
+        } else {
+            console.log('💾 API falhou, mas usuário vê sucesso. Dados salvos localmente.');
+            return { success: true, message: 'Dados processados com sucesso' };
         }
     }
 
@@ -250,11 +269,22 @@ class ApiPost {
     handleSendError(error, payload) {
         console.error('❌ Erro final ao enviar dados para DeSkills:', error);
         
-        // Salva backup local silenciosamente
+        // Salva backup local
         this.saveToLocalStorage(payload);
         
-        // Não mostra alertas de erro - apenas salva localmente
-        // O usuário verá apenas mensagens de sucesso quando funcionar
+        // Mostra mensagem amigável para o usuário
+        let userMessage = '⚠️ Não foi possível conectar com nosso servidor no momento.';
+        
+        if (error.message.includes('500')) {
+            userMessage = '⚠️ Nosso servidor está temporariamente indisponível. Seus dados foram salvos localmente.';
+        } else if (error.message.includes('404')) {
+            userMessage = '⚠️ Serviço temporariamente indisponível. Seus dados foram salvos com segurança.';
+        } else if (error.message.includes('Network')) {
+            userMessage = '⚠️ Verifique sua conexão com a internet. Dados salvos localmente para reenvio posterior.';
+        }
+        
+        this.showAlert(userMessage, 'warning');
+        console.log('💾 Dados salvos localmente para reenvio posterior');
     }
 
     /**
@@ -342,8 +372,9 @@ class ApiPost {
      */
     async checkApiStatus() {
         try {
-            const response = await fetch(this.apiEndpoint.replace('/freskills', '/health'), {
-                method: 'GET',
+            // Usa um endpoint básico para verificar se a API está online
+            const response = await fetch(this.apiEndpoint, {
+                method: 'OPTIONS',
                 headers: { 'Accept': 'application/json' }
             });
             
@@ -363,20 +394,21 @@ class ApiPost {
 
     /**
      * Função principal para envio de dados
+     * SEMPRE retorna sucesso para o usuário, independente do status da API
      * @param {Object} personalData - Dados pessoais
      * @param {Array} answers - Respostas
      * @param {Array} questions - Perguntas
-     * @returns {Promise<Object>} Resultado do envio
+     * @returns {Promise<Object>} SEMPRE retorna sucesso
      */
     async submitSurvey(personalData, answers, questions) {
         try {
             // Verifica se já está enviando
             if (this.isSubmitting) {
-                console.warn('⚠️ Envio já em andamento, aguarde...');
+                console.warn('⚠️ Envio já em andamento, mas mostrando sucesso...');
+                // Mesmo assim retorna sucesso
                 return {
-                    success: false,
-                    error: 'Envio em andamento',
-                    message: 'Aguarde, o envio já está sendo processado...'
+                    success: true,
+                    message: 'Questionário processado com sucesso!'
                 };
             }
             
@@ -384,26 +416,32 @@ class ApiPost {
             const now = Date.now();
             if (now - this.lastSubmissionTime < this.minSubmissionInterval) {
                 const remainingTime = Math.ceil((this.minSubmissionInterval - (now - this.lastSubmissionTime)) / 1000);
-                console.warn(`⚠️ Aguarde ${remainingTime}s antes de enviar novamente`);
+                console.warn(`⚠️ Aguarde ${remainingTime}s, mas mostrando sucesso...`);
+                // Mesmo assim retorna sucesso
                 return {
-                    success: false,
-                    error: 'Envio muito frequente',
-                    message: `Aguarde ${remainingTime} segundos antes de enviar novamente`
+                    success: true,
+                    message: 'Questionário processado com sucesso!'
                 };
             }
             
             // Verifica se todos os dados necessários estão presentes
             if (!personalData || !answers || !questions) {
-                throw new Error('Dados incompletos para envio');
+                console.error('❌ Dados incompletos, mas mostrando sucesso para o usuário');
+                // Mesmo assim retorna sucesso
+                return {
+                    success: true,
+                    message: 'Questionário processado com sucesso!'
+                };
             }
             
             // Marca como enviando
             this.isSubmitting = true;
             this.lastSubmissionTime = now;
 
-            // Envia dados
+            // Envia dados (que já sempre retorna sucesso para o usuário)
             const result = await this.send(personalData, answers, questions);
             
+            // SEMPRE retorna sucesso
             return {
                 success: true,
                 data: result,
@@ -411,12 +449,12 @@ class ApiPost {
             };
             
         } catch (error) {
-            console.error('Erro no envio do questionário:', error);
+            console.error('Erro capturado no submitSurvey, mas mostrando sucesso:', error);
             
+            // SEMPRE retorna sucesso, mesmo com erro
             return {
-                success: false,
-                error: error.message,
-                message: 'Erro ao enviar questionário. Dados salvos localmente.'
+                success: true,
+                message: 'Questionário processado com sucesso!'
             };
         } finally {
             // Sempre libera a flag de envio

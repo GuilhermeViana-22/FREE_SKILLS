@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug API - FREE SKILLS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-lg p-8 max-w-4xl mx-auto">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
+                <i class="fas fa-bug text-red-500 mr-3"></i>DEBUG API - FREE SKILLS
+            </h1>
+            
+            <!-- Status das APIs -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- API de Produção -->
+                <div class="bg-gray-50 p-6 rounded-lg border-l-4 border-red-500">
+                    <h2 class="text-xl font-semibold text-red-600 mb-4">
+                        <i class="fas fa-server mr-2"></i>API de Produção
+                    </h2>
+                    <p class="text-sm text-gray-600 mb-4">https://api.deskills.com.br/api/lead</p>
+                    
+                    <div id="prodStatus" class="mb-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-spinner fa-spin text-blue-500 mr-2"></i>
+                            <span>Verificando...</span>
+                        </div>
+                    </div>
+                    
+                    <button id="testProdApi" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+                        <i class="fas fa-flask mr-2"></i>Testar API
+                    </button>
+                </div>
+                
+                <!-- API de Desenvolvimento -->
+                <div class="bg-gray-50 p-6 rounded-lg border-l-4 border-blue-500">
+                    <h2 class="text-xl font-semibold text-blue-600 mb-4">
+                        <i class="fas fa-code mr-2"></i>API de Desenvolvimento
+                    </h2>
+                    <p class="text-sm text-gray-600 mb-4">http://127.0.0.1:8000/api/lead</p>
+                    
+                    <div id="devStatus" class="mb-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-spinner fa-spin text-blue-500 mr-2"></i>
+                            <span>Verificando...</span>
+                        </div>
+                    </div>
+                    
+                    <button id="testDevApi" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+                        <i class="fas fa-flask mr-2"></i>Testar API
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Problemas Identificados -->
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
+                <h3 class="text-lg font-semibold text-yellow-800 mb-4">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Problemas Identificados
+                </h3>
+                <ul id="problemsList" class="space-y-2">
+                    <li class="flex items-center text-yellow-700">
+                        <i class="fas fa-circle text-xs mr-2"></i>
+                        Verificando APIs...
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Soluções -->
+            <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
+                <h3 class="text-lg font-semibold text-green-800 mb-4">
+                    <i class="fas fa-tools mr-2"></i>Soluções Aplicadas
+                </h3>
+                <ul class="space-y-2 text-green-700">
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-xs mr-2"></i>
+                        Correção de erros de JavaScript no main.js
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-xs mr-2"></i>
+                        Validação melhorada de campos do formulário
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-xs mr-2"></i>
+                        Tratamento de erros mais amigável para o usuário
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-xs mr-2"></i>
+                        Sistema de backup local para reenvio posterior
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check text-xs mr-2"></i>
+                        Detecção automática de ambiente (dev/prod)
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Log de Atividades -->
+            <div class="bg-gray-50 border rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                    <i class="fas fa-list mr-2"></i>Log de Atividades
+                </h3>
+                <div id="logContainer" class="space-y-2 max-h-64 overflow-y-auto">
+                    <!-- Logs serão adicionados aqui -->
+                </div>
+                <button id="clearLog" class="mt-4 bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm">
+                    <i class="fas fa-trash mr-1"></i>Limpar Log
+                </button>
+            </div>
+            
+            <!-- Botões de Ação -->
+            <div class="mt-8 text-center space-x-4">
+                <a href="index.html" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-flex items-center">
+                    <i class="fas fa-home mr-2"></i>Voltar ao Questionário
+                </a>
+                <a href="test_api.html" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg inline-flex items-center">
+                    <i class="fas fa-vial mr-2"></i>Página de Testes
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Função para adicionar logs
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const logEntry = document.createElement('div');
+            
+            const colors = {
+                info: 'text-blue-600',
+                success: 'text-green-600',
+                error: 'text-red-600',
+                warning: 'text-yellow-600'
+            };
+            
+            const icons = {
+                info: 'fa-info-circle',
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-exclamation-triangle'
+            };
+            
+            logEntry.className = `flex items-center text-sm ${colors[type]}`;
+            logEntry.innerHTML = `
+                <i class="fas ${icons[type]} mr-2"></i>
+                <span class="text-gray-500 text-xs mr-2">${new Date().toLocaleTimeString()}</span>
+                <span>${message}</span>
+            `;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        // Função para testar API
+        async function testAPI(url, environment) {
+            const statusDiv = document.getElementById(`${environment}Status`);
+            
+            addLog(`🧪 Testando ${environment} API: ${url}`, 'info');
+            
+            try {
+                statusDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas fa-spinner fa-spin text-blue-500 mr-2"></i>
+                        <span>Testando...</span>
+                    </div>
+                `;
+                
+                const response = await fetch(url, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Origin': window.location.origin
+                    }
+                });
+                
+                if (response.ok) {
+                    statusDiv.innerHTML = `
+                        <div class="flex items-center text-green-600">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            <span>Online (${response.status})</span>
+                        </div>
+                    `;
+                    addLog(`✅ ${environment} API está online`, 'success');
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="flex items-center text-yellow-600">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            <span>Problema (${response.status})</span>
+                        </div>
+                    `;
+                    addLog(`⚠️ ${environment} API retornou ${response.status}`, 'warning');
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <div class="flex items-center text-red-600">
+                        <i class="fas fa-times-circle mr-2"></i>
+                        <span>Offline</span>
+                    </div>
+                `;
+                addLog(`❌ ${environment} API offline: ${error.message}`, 'error');
+            }
+        }
+        
+        // Função para testar envio de dados
+        async function testDataSend(url, environment) {
+            const testData = {
+                "nome_completo": "Debug Test User",
+                "email": "debug@test.com",
+                "whatsapp": "11999999999",
+                "estado": "São Paulo",
+                "cidade": "São Paulo",
+                "respostas": {
+                    "nome": "Debug Test User",
+                    "email": "debug@test.com",
+                    "perguntas": {
+                        "pergunta_1": "sim"
+                    }
+                }
+            };
+            
+            addLog(`📤 Testando envio de dados para ${environment}`, 'info');
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'User-Agent': 'FreeSkills-Debug/1.0'
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addLog(`✅ Envio para ${environment} bem-sucedido`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    addLog(`❌ Envio para ${environment} falhou: HTTP ${response.status}`, 'error');
+                }
+            } catch (error) {
+                addLog(`❌ Erro ao enviar para ${environment}: ${error.message}`, 'error');
+            }
+        }
+        
+        // Atualizar lista de problemas
+        function updateProblemsList() {
+            const problemsList = document.getElementById('problemsList');
+            const problems = [
+                'API de produção retornando erro 500 (Server Error)',
+                'Possível problema na configuração do servidor backend',
+                'Headers CORS configurados corretamente',
+                'Estrutura dos dados de envio validada'
+            ];
+            
+            problemsList.innerHTML = problems.map(problem => `
+                <li class="flex items-center text-yellow-700">
+                    <i class="fas fa-circle text-xs mr-2"></i>
+                    ${problem}
+                </li>
+            `).join('');
+        }
+        
+        // Event listeners
+        document.getElementById('testProdApi').addEventListener('click', () => {
+            testDataSend('https://api.deskills.com.br/api/lead', 'produção');
+        });
+        
+        document.getElementById('testDevApi').addEventListener('click', () => {
+            testDataSend('http://127.0.0.1:8000/api/lead', 'desenvolvimento');
+        });
+        
+        document.getElementById('clearLog').addEventListener('click', () => {
+            document.getElementById('logContainer').innerHTML = '';
+            addLog('Log limpo', 'info');
+        });
+        
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('🚀 Debug page carregada', 'success');
+            updateProblemsList();
+            
+            // Testa ambas as APIs
+            testAPI('https://api.deskills.com.br/api/lead', 'prod');
+            testAPI('http://127.0.0.1:8000/api/lead', 'dev');
+        });
+    </script>
+</body>
+</html>
